@@ -1,0 +1,39 @@
+name: TPEx daily snapshot
+
+on:
+  schedule:
+    # Weekdays 15:30 and 17:30 Asia/Taipei (TPEx publishes after the 14:30 close).
+    - cron: '30 7 * * 1-5'
+    - cron: '30 9 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date (YYYY-MM-DD); empty = today in Taipei'
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Fetch official TPEx datasets
+        run: node scripts/snapshot.mjs "${{ github.event.inputs.date }}"
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tpex
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          git commit -m "snapshot: TPEx $(jq -r .date tpex/latest.json)"
+          git push
