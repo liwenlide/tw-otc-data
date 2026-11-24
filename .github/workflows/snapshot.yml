@@ -2,13 +2,17 @@ name: TPEx daily snapshot
 
 on:
   schedule:
-    # Weekdays 15:30 and 17:30 Asia/Taipei (TPEx publishes after the 14:30 close).
-    - cron: '30 7 * * 1-5'
-    - cron: '30 9 * * 1-5'
+    # GitHub may start scheduled runs hours late, so several runs are spread out and each one
+    # backfills whatever recent weekday is still missing (times below are Asia/Taipei).
+    - cron: '7 7 * * 1-5'    # 15:07 quotes
+    - cron: '41 8 * * 1-5'   # 16:41 法人 / 本益比
+    - cron: '13 10 * * 1-5'  # 18:13
+    - cron: '47 13 * * 1-5'  # 21:47 融資
+    - cron: '23 0 * * 2-6'   # 08:23 next morning catch-up
   workflow_dispatch:
     inputs:
       date:
-        description: 'Date (YYYY-MM-DD); empty = today in Taipei'
+        description: 'Date (YYYY-MM-DD); empty = backfill missing weekdays of the last 7 days'
         required: false
 
 permissions:
@@ -35,5 +39,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add tpex
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
-          git commit -m "snapshot: TPEx $(jq -r .date tpex/latest.json)"
+          git commit -m "snapshot: TPEx (latest $(jq -r .date tpex/latest.json))"
           git push

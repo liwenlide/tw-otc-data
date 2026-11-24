@@ -3,7 +3,7 @@
 Daily copies of the **public** official TPEx (上櫃) end-of-day datasets, for
 [analysis-engine-handoff](https://github.com/liwenlide/analysis-engine-handoff), whose hosting cannot reach tpex.org.tw.
 
-A GitHub Action runs on weekdays at 15:30 and 17:30 Taipei time and commits:
+A GitHub Action runs several times each weekday (15:07, 16:41, 18:13, 21:47 and 08:23 next morning, Taipei time). Scheduled runs can start hours late, so each run backfills any weekday of the last 7 days that is still missing, and commits:
 
 | Path | Source |
 |---|---|
